@@ -272,6 +272,7 @@ StringRef Triple::getOSTypeName(OSType Kind) {
   case Win32: return "windows";
   case ZOS: return "zos";
   case ShaderModel: return "shadermodel";
+  case Microcosm: return "microcosm";
   case LiteOS: return "liteos";
   }
 

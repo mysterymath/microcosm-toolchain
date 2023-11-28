@@ -222,6 +222,7 @@ public:
     Emscripten,
     ShaderModel, // DirectX ShaderModel
     LiteOS,
+    Microcosm,
     Serenity,
     LastOSType = Serenity
   };

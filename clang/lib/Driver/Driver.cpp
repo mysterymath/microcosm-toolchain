@@ -48,6 +48,7 @@
 #include "ToolChains/VEToolchain.h"
 #include "ToolChains/WebAssembly.h"
 #include "ToolChains/XCore.h"
+#include "ToolChains/Zephyrix.h"
 #include "ToolChains/ZOS.h"
 #include "clang/Basic/TargetID.h"
 #include "clang/Basic/Version.h"
@@ -6299,6 +6300,9 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
       break;
     case llvm::Triple::LiteOS:
       TC = std::make_unique<toolchains::OHOS>(*this, Target, Args);
+      break;
+    case llvm::Triple::Zephyrix:
+      TC = std::make_unique<toolchains::Zephyrix>(*this, Target, Args);
       break;
     case llvm::Triple::ZOS:
       TC = std::make_unique<toolchains::ZOS>(*this, Target, Args);

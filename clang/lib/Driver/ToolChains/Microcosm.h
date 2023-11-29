@@ -17,9 +17,14 @@ namespace driver {
 namespace toolchains {
 
 class LLVM_LIBRARY_VISIBILITY Microcosm : public ToolChain {
+public:
   Microcosm(const Driver &D, const llvm::Triple &Triple,
            const llvm::opt::ArgList &Args);
   ~Microcosm() override = default;
+
+  bool isPICDefault() const override { return true; }
+  bool isPIEDefault(const llvm::opt::ArgList &Args) const override { return true; }
+  bool isPICDefaultForced() const override { return true; }
 };
 
 } // namespace toolchains

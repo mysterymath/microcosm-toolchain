@@ -30,6 +30,7 @@
 #include "ToolChains/Hurd.h"
 #include "ToolChains/Lanai.h"
 #include "ToolChains/Linux.h"
+#include "ToolChains/Microcosm.h"
 #include "ToolChains/MSP430.h"
 #include "ToolChains/MSVC.h"
 #include "ToolChains/MinGW.h"
@@ -48,7 +49,6 @@
 #include "ToolChains/VEToolchain.h"
 #include "ToolChains/WebAssembly.h"
 #include "ToolChains/XCore.h"
-#include "ToolChains/Zephyrix.h"
 #include "ToolChains/ZOS.h"
 #include "clang/Basic/TargetID.h"
 #include "clang/Basic/Version.h"
@@ -6301,8 +6301,8 @@ const ToolChain &Driver::getToolChain(const ArgList &Args,
     case llvm::Triple::LiteOS:
       TC = std::make_unique<toolchains::OHOS>(*this, Target, Args);
       break;
-    case llvm::Triple::Zephyrix:
-      TC = std::make_unique<toolchains::Zephyrix>(*this, Target, Args);
+    case llvm::Triple::Microcosm:
+      TC = std::make_unique<toolchains::Microcosm>(*this, Target, Args);
       break;
     case llvm::Triple::ZOS:
       TC = std::make_unique<toolchains::ZOS>(*this, Target, Args);

@@ -33,29 +33,21 @@ void microcosm::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   ArgStringList CmdArgs;
 
   auto &TC = static_cast<const toolchains::Microcosm &>(getToolChain());
-  const llvm::Triple &Triple = getToolChain().getEffectiveTriple();
 
   AddLinkerInputs(TC, Inputs, Args, CmdArgs, JA);
-
-  if (Triple.isARM() || Triple.isThumb()) {
-    bool IsBigEndian = arm::isARMBigEndian(Triple, Args);
-    if (IsBigEndian)
-      arm::appendBE8LinkFlag(Args, CmdArgs, Triple);
-    CmdArgs.push_back(IsBigEndian ? "-EB" : "-EL");
-  }
 
   Args.addAllArgs(CmdArgs, {options::OPT_L, options::OPT_T_Group,
                             options::OPT_s, options::OPT_t, options::OPT_r});
 
   TC.AddFilePathLibArgs(Args, CmdArgs);
 
-  for (const auto &LibPath : TC.getLibraryPaths())
-    CmdArgs.push_back(Args.MakeArgString(llvm::Twine("-L", LibPath)));
-
   const std::string FileName = TC.getCompilerRT(Args, "builtins");
   llvm::SmallString<128> PathBuf{FileName};
   llvm::sys::path::remove_filename(PathBuf);
   CmdArgs.push_back(Args.MakeArgString("-L" + PathBuf));
+
+  if (Args.hasArg(options::OPT_shared))
+    CmdArgs.push_back("-shared");
 
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());

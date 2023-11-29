@@ -26,6 +26,7 @@ public:
 protected:
   Tool *buildLinker() const override;
 
+public:
   const char *getDefaultLinker() const override { return "ld.lld"; }
 
   bool isPICDefault() const override { return true; }

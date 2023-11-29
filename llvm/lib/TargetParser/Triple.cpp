@@ -643,6 +643,7 @@ static Triple::OSType parseOS(StringRef OSName) {
     .StartsWith("emscripten", Triple::Emscripten)
     .StartsWith("shadermodel", Triple::ShaderModel)
     .StartsWith("liteos", Triple::LiteOS)
+    .StartsWith("microcosm", Triple::Microcosm)
     .StartsWith("serenity", Triple::Serenity)
     .Default(Triple::UnknownOS);
 }

@@ -48,6 +48,8 @@ void microcosm::Linker::ConstructJob(Compilation &C, const JobAction &JA,
 
   if (Args.hasArg(options::OPT_shared))
     CmdArgs.push_back("-shared");
+  else
+    CmdArgs.push_back("-pie");
 
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());

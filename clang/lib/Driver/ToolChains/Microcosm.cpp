@@ -51,6 +51,13 @@ void microcosm::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   else
     CmdArgs.push_back("-pie");
 
+  CmdArgs.push_back("-z");
+  CmdArgs.push_back("norelro");
+  CmdArgs.push_back("-z");
+  CmdArgs.push_back("max-page-size=1");
+
+  CmdArgs.push_back("--hash-style=gnu");
+
   CmdArgs.push_back("-o");
   CmdArgs.push_back(Output.getFilename());
 

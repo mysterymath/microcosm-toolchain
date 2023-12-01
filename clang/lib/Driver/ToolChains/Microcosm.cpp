@@ -56,6 +56,8 @@ void microcosm::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("-z");
   CmdArgs.push_back("max-page-size=1");
 
+  CmdArgs.push_back("-fdpic");
+
   CmdArgs.push_back("--hash-style=gnu");
 
   CmdArgs.push_back("-o");

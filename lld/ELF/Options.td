@@ -229,6 +229,8 @@ defm fatal_warnings: B<"fatal-warnings",
     "Treat warnings as errors",
     "Do not treat warnings as errors (default)">;
 
+def fdpic: F<"fdpic">, HelpText<"Enable function descriptor PIC">;
+
 defm filter: Eq<"filter", "Set DT_FILTER field to the specified name">;
 
 defm fini: Eq<"fini", "Specify a finalizer function">, MetaVarName<"<symbol>">;

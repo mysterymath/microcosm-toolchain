@@ -409,6 +409,9 @@ struct Config {
   // True if we are creating position-independent code.
   bool isPic;
 
+  // Rrue if we are using function descriptor pic.
+  bool isFdpic;
+
   // 4 for ELF32, 8 for ELF64.
   int wordsize;
 

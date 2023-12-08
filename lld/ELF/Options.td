@@ -443,6 +443,8 @@ defm target2:
   Eq<"target2", "Interpret R_ARM_TARGET2 as <type>, where <type> is one of rel, abs, or got-rel">,
   MetaVarName<"<type>">;
 
+def thumb_plt : F<"thumb-plt">, HelpText<"Use only Thumb instructions for PLT">;
+
 defm threads
     : EEq<"threads",
          "Number of threads. '1' disables multi-threading. By default all "

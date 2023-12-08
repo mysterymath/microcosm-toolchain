@@ -57,6 +57,8 @@ void microcosm::Linker::ConstructJob(Compilation &C, const JobAction &JA,
   CmdArgs.push_back("max-page-size=1");
 
   CmdArgs.push_back("-fdpic");
+  // 32-bit ARM is deprecated, and 64-bit ARM has an MMU.
+  CmdArgs.push_back("-thumb-plt");
 
   CmdArgs.push_back("--hash-style=gnu");
 

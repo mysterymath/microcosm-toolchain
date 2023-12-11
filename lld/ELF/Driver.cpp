@@ -1394,6 +1394,7 @@ static void readConfigs(opt::InputArgList &args) {
   config->sysroot = args.getLastArgValue(OPT_sysroot);
   config->target1Rel = args.hasFlag(OPT_target1_rel, OPT_target1_abs, false);
   config->target2 = getTarget2(args);
+  config->thumbPlt = args.hasArg(OPT_thumb_plt);
   config->thinLTOCacheDir = args.getLastArgValue(OPT_thinlto_cache_dir);
   config->thinLTOCachePolicy = CHECK(
       parseCachePruningPolicy(args.getLastArgValue(OPT_thinlto_cache_policy)),

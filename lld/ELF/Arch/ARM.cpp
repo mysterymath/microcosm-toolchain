@@ -60,7 +60,7 @@ ARM::ARM() {
   tlsModuleIndexRel = R_ARM_TLS_DTPMOD32;
   tlsOffsetRel = R_ARM_TLS_DTPOFF32;
   pltHeaderSize = 32;
-  pltEntrySize = 16;
+  pltEntrySize = config->thumbPlt ? 20 : 16;
   ipltEntrySize = 16;
   trapInstr = {0xd4, 0xd4, 0xd4, 0xd4};
   needsThunks = true;
@@ -227,18 +227,19 @@ static void writePltHeaderThumb(uint8_t *buf) {
   // Similar to the long form PLT header, but temporarily using r0, since high
   // registers are generally only accessible by MOV.
 
-  write16(buf + 0, 0xb501); //     push {r0, lr}
-  write16(buf + 2, 0x4802); //     ldr r0, L2
+  write16(buf + 0, 0xb501); //      push {r0, lr}
+  write16(buf + 2, 0x4803); //      ldr r0, L2
   uint64_t l1 = in.plt->getVA() + 4;
   write16(buf + 4, 0x4478);  // L1: add r0, pc
-  write16(buf + 6, 0x4686);  //     mov lr, r0
-  write16(buf + 8, 0xbc01);  //     pop {r0}
-  write16(buf + 10, 0x46f7); //     mov pc, lr
+  write16(buf + 6, 0x6800);  //     ldr r0, [r0]
+  write16(buf + 8, 0x4686);  //     mov lr, r0
+  write16(buf + 10, 0xbc01); //     pop {r0}
+  write16(buf + 12, 0x4770); //     bx lr
+  write16(buf + 14, 0xbf00); //     udf #0xde
 
   // L2: .word <PC offset from L1 to .got.plt>
-  write32(buf + 12, in.gotPlt->getVA() - l1 - 4);
+  write32(buf + 16, in.gotPlt->getVA() - l1 - 4);
 
-  write32(buf + 16, 0xd4d4d4d4); // Pad to 32-byte boundary
   write32(buf + 20, 0xd4d4d4d4); // Pad to 32-byte boundary
   write32(buf + 24, 0xd4d4d4d4); // Pad to 32-byte boundary
   write32(buf + 28, 0xd4d4d4d4); // Pad to 32-byte boundary
@@ -302,19 +303,21 @@ static void writePltLong(uint8_t *buf, uint64_t gotPltEntryAddr,
 }
 
 static void writePltThumb(uint8_t *buf, uint64_t gotPltEntryAddr,
-                         uint64_t pltEntryAddr) {
+                          uint64_t pltEntryAddr) {
   // Similar to the long form PLT, but temporarily using r0, since high
   // registers are generally only accessible by MOV.
-  write16(buf + 0, 0xb401); //     push {r0}
-  write16(buf + 2, 0x4802); //     ldr r0, L2
+  write16(buf + 0, 0xb401); //      push {r0}
+  write16(buf + 2, 0x4803); //      ldr r0, L2
   uint64_t l1 = pltEntryAddr + 4;
   write16(buf + 4, 0x4478);  // L1: add r0, pc
-  write16(buf + 6, 0x4684);  //     mov ip, r0
-  write16(buf + 8, 0xbc01);  //     pop {r0}
-  write16(buf + 10, 0x46e7); //     mov pc, ip
+  write16(buf + 6, 0x6800);  //     ldr r0, [r0]
+  write16(buf + 8, 0x4684);  //     mov ip, r0
+  write16(buf + 10, 0xbc01); //     pop {r0}
+  write16(buf + 12, 0x4760); //     bx ip
+  write16(buf + 14, 0xbf00); //     nop
 
   // L2: .word <PC offset from L1 to .got.plt entry>
-  write32(buf + 12, gotPltEntryAddr - l1 - 4);
+  write32(buf + 16, gotPltEntryAddr - l1 - 4);
 }
 
 // The default PLT entries require the .got.plt to be within 128 Mb of the

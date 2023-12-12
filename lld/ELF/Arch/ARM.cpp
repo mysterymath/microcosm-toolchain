@@ -1,9 +1,4 @@
 //===- ARM.cpp ------------------------------------------------------------===//
-//
-// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
-// See https://llvm.org/LICENSE.txt for license information.
-// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
-//
 //===----------------------------------------------------------------------===//
 
 #include "InputFiles.h"
@@ -228,9 +223,35 @@ static void writePltHeaderLong(uint8_t *buf) {
   write32(buf + 16, gotPlt - l1 - 8);
 }
 
+static void writePltHeaderThumb(uint8_t *buf) {
+  // Similar to the long form PLT header, but temporarily using r0, since high
+  // registers are generally only accessible by MOV.
+
+  write16(buf + 0, 0xb501); //     push {r0, lr}
+  write16(buf + 2, 0x4802); //     ldr r0, L2
+  uint64_t l1 = in.plt->getVA() + 4;
+  write16(buf + 4, 0x4478);  // L1: add r0, pc
+  write16(buf + 6, 0x4686);  //     mov lr, r0
+  write16(buf + 8, 0xbc01);  //     pop {r0}
+  write16(buf + 10, 0x46f7); //     mov pc, lr
+
+  // L2: .word <PC offset from L1 to .got.plt>
+  write32(buf + 12, in.gotPlt->getVA() - l1 - 4);
+
+  write32(buf + 16, 0xd4d4d4d4); // Pad to 32-byte boundary
+  write32(buf + 20, 0xd4d4d4d4); // Pad to 32-byte boundary
+  write32(buf + 24, 0xd4d4d4d4); // Pad to 32-byte boundary
+  write32(buf + 28, 0xd4d4d4d4); // Pad to 32-byte boundary
+}
+
 // The default PLT header requires the .got.plt to be within 128 Mb of the
 // .plt in the positive direction.
 void ARM::writePltHeader(uint8_t *buf) const {
+  if (config->thumbPlt) {
+    writePltHeaderThumb(buf);
+    return;
+  }
+
   // Use a similar sequence to that in writePlt(), the difference is the calling
   // conventions mean we use lr instead of ip. The PLT entry is responsible for
   // saving lr on the stack, the dynamic loader is responsible for reloading
@@ -259,8 +280,13 @@ void ARM::writePltHeader(uint8_t *buf) const {
 }
 
 void ARM::addPltHeaderSymbols(InputSection &isec) const {
-  addSyntheticLocal("$a", STT_NOTYPE, 0, 0, isec);
-  addSyntheticLocal("$d", STT_NOTYPE, 16, 0, isec);
+  if (config->thumbPlt) {
+    addSyntheticLocal("$t", STT_NOTYPE, 0, 0, isec);
+    addSyntheticLocal("$d", STT_NOTYPE, 12, 0, isec);
+  } else {
+    addSyntheticLocal("$a", STT_NOTYPE, 0, 0, isec);
+    addSyntheticLocal("$d", STT_NOTYPE, 16, 0, isec);
+  }
 }
 
 // Long form PLT entries that do not have any restrictions on the displacement
@@ -275,10 +301,31 @@ static void writePltLong(uint8_t *buf, uint64_t gotPltEntryAddr,
   write32(buf + 12, gotPltEntryAddr - l1 - 8);
 }
 
+static void writePltThumb(uint8_t *buf, uint64_t gotPltEntryAddr,
+                         uint64_t pltEntryAddr) {
+  // Similar to the long form PLT, but temporarily using r0, since high
+  // registers are generally only accessible by MOV.
+  write16(buf + 0, 0xb401); //     push {r0}
+  write16(buf + 2, 0x4802); //     ldr r0, L2
+  uint64_t l1 = pltEntryAddr + 4;
+  write16(buf + 4, 0x4478);  // L1: add r0, pc
+  write16(buf + 6, 0x4684);  //     mov ip, r0
+  write16(buf + 8, 0xbc01);  //     pop {r0}
+  write16(buf + 10, 0x46e7); //     mov pc, ip
+
+  // L2: .word <PC offset from L1 to .got.plt entry>
+  write32(buf + 12, gotPltEntryAddr - l1 - 4);
+}
+
 // The default PLT entries require the .got.plt to be within 128 Mb of the
 // .plt in the positive direction.
 void ARM::writePlt(uint8_t *buf, const Symbol &sym,
                    uint64_t pltEntryAddr) const {
+  if (config->thumbPlt) {
+    writePltThumb(buf, sym.getGotPltVA(), pltEntryAddr);
+    return;
+  }
+
   // The PLT entry is similar to the example given in Appendix A of ELF for
   // the Arm Architecture. Instead of using the Group Relocations to find the
   // optimal rotation for the 8-bit immediate used in the add instructions we
@@ -303,7 +350,7 @@ void ARM::writePlt(uint8_t *buf, const Symbol &sym,
 }
 
 void ARM::addPltSymbols(InputSection &isec, uint64_t off) const {
-  addSyntheticLocal("$a", STT_NOTYPE, off, 0, isec);
+  addSyntheticLocal(config->thumbPlt ? "$t" : "$a", STT_NOTYPE, off, 0, isec);
   addSyntheticLocal("$d", STT_NOTYPE, off + 12, 0, isec);
 }
 

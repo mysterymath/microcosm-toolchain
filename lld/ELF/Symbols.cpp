@@ -193,6 +193,11 @@ uint64_t Symbol::getPltVA() const {
   // See detailed comment in the `getSymVA` function.
   if (config->emachine == EM_MIPS && isMicroMips())
     outVA |= 1;
+
+  // When using Thumb PLTs the low bit should be one to indicate Thumb.
+  if (config->emachine == EM_ARM && config->thumbPlt)
+    outVA |= 1;
+
   return outVA;
 }
 

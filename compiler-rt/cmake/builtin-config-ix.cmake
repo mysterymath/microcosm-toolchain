@@ -239,4 +239,10 @@ else()
   set(COMPILER_RT_HAS_CRT FALSE)
 endif()
 
+if (OS_NAME STREQUAL Microcosm)
+  set(CMAKE_C_OUTPUT_EXTENSION .o)
+  set(CMAKE_CXX_OUTPUT_EXTENSION .o)
+  set(CMAKE_ASM_OUTPUT_EXTENSION .o)
+endif()
+
 message(STATUS "Builtin supported architectures: ${BUILTIN_SUPPORTED_ARCH}")

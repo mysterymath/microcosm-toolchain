@@ -11,13 +11,6 @@ endif()
 include(${LLVM_COMMON_CMAKE_UTILS}/Modules/CMakePolicy.cmake
   NO_POLICY_SCOPE)
 
-# Check if compiler-rt is built as a standalone project.
-if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR OR COMPILER_RT_STANDALONE_BUILD)
-  project(CompilerRT C CXX ASM)
-  set(COMPILER_RT_STANDALONE_BUILD TRUE)
-  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-endif()
-
 # Add path for custom compiler-rt modules.
 list(INSERT CMAKE_MODULE_PATH 0
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
@@ -25,6 +18,13 @@ list(INSERT CMAKE_MODULE_PATH 0
   "${LLVM_COMMON_CMAKE_UTILS}"
   "${LLVM_COMMON_CMAKE_UTILS}/Modules"
   )
+
+# Check if compiler-rt is built as a standalone project.
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR OR COMPILER_RT_STANDALONE_BUILD)
+  project(CompilerRT C CXX ASM)
+  set(COMPILER_RT_STANDALONE_BUILD TRUE)
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
 
 if(CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_CFG_RESOLVED_INTDIR "${CMAKE_CFG_INTDIR}/")
